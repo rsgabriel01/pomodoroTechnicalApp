@@ -8,24 +8,43 @@ import {
   Alert,
 } from 'react-native';
 
+import AsyncStorage from '@react-native-community/async-storage';
+
 import Icon from 'react-native-vector-icons/Feather';
 
 import styles from './HomeStyles';
 
 export default function ServiceOrder() {
   // #region Definitions
-  const [secondsWork, setSecondsWork] = useState(30);
-  const [secondsWorkText, setSecondsWorkText] = useState('30');
+  const [secondsWork, setSecondsWork] = useState(25);
+  const [secondsWorkText, setSecondsWorkText] = useState('25');
   const [pauseTimeWork, setPauseTimeWork] = useState(true);
 
-  const [secondsBreak, setSecondsBreak] = useState(10);
-  const [secondsBreakText, setSecondsBreakText] = useState('10');
+  const [secondsBreak, setSecondsBreak] = useState(5);
+  const [secondsBreakText, setSecondsBreakText] = useState('5');
   const [pauseTimeBreak, setPauseTimeBreak] = useState(true);
 
   useEffect(() => {
-    setSecondsWork(10);
-    setSecondsBreak(5);
+    getSettingsSave();
   }, []);
+
+  const getSettingsSave = async () => {
+    try {
+      const secondsWorkSave = await AsyncStorage.getItem('@SECONDS_WORK');
+
+      if (secondsWorkSave) {
+        setSecondsWork(secondsWorkSave);
+      }
+
+      const secondsBreakSave = await AsyncStorage.getItem('@SECONDS_BREAK');
+
+      if (secondsBreakSave) {
+        setSecondsBreak(secondsBreakSave);
+      }
+    } catch (error) {
+      alert(`ERRO: getSettingsSave. - ${error}`);
+    }
+  };
 
   useEffect(() => {
     if (secondsWork > 0 && pauseTimeWork === false) {
@@ -128,6 +147,7 @@ export default function ServiceOrder() {
             },
           },
         ],
+
         {cancelable: false},
       );
     }
