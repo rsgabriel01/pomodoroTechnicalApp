@@ -1,235 +1,240 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   SafeAreaView,
   View,
   ScrollView,
   Text,
-  StyleSheet,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 
-import { createIconSet } from 'react-native-vector-icons';
+import Icon from 'react-native-vector-icons/Feather';
 
-// const glyphMap = require('../../assets/customIcons/remixicon.glyphmap.json');
-// const assetId = require('../../assets/customIcons/remixicon.ttf');
-
-// const CustomIcon = createIconSet(glyphMap, 'remixicon', assetId);
+import styles from './HomeStyles';
 
 export default function ServiceOrder() {
   // #region Definitions
+  const [secondsWork, setSecondsWork] = useState(30);
+  const [secondsWorkText, setSecondsWorkText] = useState('30');
+  const [pauseTimeWork, setPauseTimeWork] = useState(true);
 
-  // #endregion Definitions
+  const [secondsBreak, setSecondsBreak] = useState(10);
+  const [secondsBreakText, setSecondsBreakText] = useState('10');
+  const [pauseTimeBreak, setPauseTimeBreak] = useState(true);
+
+  useEffect(() => {
+    setSecondsWork(10);
+    setSecondsBreak(5);
+  }, []);
+
+  useEffect(() => {
+    if (secondsWork > 0 && pauseTimeWork === false) {
+      decrementTime('work');
+    } else if (secondsWork <= 0) {
+      alerts('break');
+    }
+
+    if (secondsWork.toString().length < 2) {
+      setSecondsWorkText(`0${secondsWork.toString()}`);
+    } else {
+      setSecondsWorkText(secondsWork);
+    }
+  }, [secondsWork]);
+
+  useEffect(() => {
+    if (secondsBreak > 0 && pauseTimeBreak === false) {
+      decrementTime('break');
+    } else if (secondsBreak <= 0) {
+      alerts('work');
+    }
+
+    if (secondsBreak.toString().length < 2) {
+      setSecondsBreakText(`0${secondsBreak.toString()}`);
+    } else {
+      setSecondsBreakText(secondsBreak);
+    }
+  }, [secondsBreak]);
+
+  const decrementTime = (typeTimeDecrement) => {
+    if (typeTimeDecrement === 'work') {
+      setTimeout(() => setSecondsWork(secondsWork - 1), 1000);
+    }
+
+    if (typeTimeDecrement === 'break') {
+      setTimeout(() => setSecondsBreak(secondsBreak - 1), 1000);
+    }
+  };
+
+  const handlePlayTimeWork = (typePlayTime) => {
+    if (typePlayTime === 'work') {
+      if (pauseTimeWork === true) {
+        setPauseTimeWork(false);
+      } else if (pauseTimeWork === false) {
+        setPauseTimeWork(true);
+      }
+
+      decrementTime('work');
+    }
+
+    if (typePlayTime === 'break') {
+      if (pauseTimeBreak === true) {
+        setPauseTimeBreak(false);
+      } else if (pauseTimeBreak === false) {
+        setPauseTimeBreak(true);
+      }
+
+      decrementTime('break');
+    }
+  };
+
+  const handleResetTime = (resetTypeTime) => {
+    if (resetTypeTime === 'work') {
+      setPauseTimeWork(true);
+      setSecondsWork(10);
+    }
+
+    if (resetTypeTime === 'break') {
+      setPauseTimeBreak(true);
+      setSecondsBreak(10);
+    }
+  };
+
+  const alerts = (tipeAlert) => {
+    if (tipeAlert === 'break') {
+      Alert.alert(
+        'IIIHUL!',
+        'Hora de tomar aquele café.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              handleResetTime('work');
+            },
+          },
+        ],
+        {cancelable: false},
+      );
+    }
+
+    if (tipeAlert === 'work') {
+      Alert.alert(
+        'OLHA SÓ!',
+        'Hora de voltar ao trabalho.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              handleResetTime('break');
+            },
+          },
+        ],
+        {cancelable: false},
+      );
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeContainer}>
-      <ScrollView style={styles.containerScroll}>
-        <View style={styles.main}>
-          <View style={styles.iconNameClient}>
-            {/* <CustomIcon name="user-2-line" size={75} color="#000" /> */}
+      <View style={styles.main}>
+        <View>
+          <View style={styles.viewTitleSession}>
+            <Icon name="tool" size={40} color="#f1f1f1" />
 
-            <View style={styles.nameCodClient}>
-              <Text style={styles.nameClient} />
-              <Text style={styles.codClient}>Código: </Text>
-            </View>
+            <Text style={styles.titleSession}>WORK</Text>
           </View>
 
-          {/* OS */}
-          <View style={styles.orderService}>
-            <View style={styles.dataTitle}>
-              {/* <CustomIcon name="file-list-line" size={35} color="#000" /> */}
-              <Text style={styles.dataTitleText}>Ordem de serviço</Text>
-            </View>
+          <Text
+            style={[
+              styles.textTimer,
+              !pauseTimeWork ? {color: '#B22222'} : '',
+            ]}>
+            00:{secondsWorkText}
+          </Text>
 
-            <View style={styles.codSituationServiceOrder}>
-              <View style={styles.textsColumn}>
-                <Text style={styles.textDarkGray}>Código</Text>
-                <Text style={styles.textLightGray} />
-              </View>
+          <View style={styles.buttons}>
+            <TouchableOpacity
+              disabled={!pauseTimeBreak}
+              onPress={() => {
+                handlePlayTimeWork('work');
+              }}
+              style={[styles.button, !pauseTimeBreak ? {opacity: 0.5} : '']}>
+              {pauseTimeWork ? (
+                <Icon name="play" size={20} color="#f1f1f1" />
+              ) : (
+                <Icon name="pause" size={20} color="#f1f1f1" />
+              )}
 
-              <View style={styles.textsColumn}>
-                <Text style={styles.textDarkGray}>Situação</Text>
-                <Text style={styles.textLightGray} />
-              </View>
-            </View>
+              <Text style={styles.buttonText}>
+                {pauseTimeWork ? 'Start' : 'Pause'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              disabled={!pauseTimeWork || !pauseTimeBreak}
+              onPress={() => {
+                handleResetTime('work');
+              }}
+              style={[
+                styles.button,
+                !pauseTimeWork || !pauseTimeBreak ? {opacity: 0.5} : '',
+              ]}>
+              <Icon name="rotate-ccw" size={20} color="#f1f1f1" />
+
+              <Text style={styles.buttonText}>Reset</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
+      </View>
+      <View style={styles.main}>
+        <View>
+          <View style={styles.viewTitleSession}>
+            <Icon name="coffee" size={40} color="#f1f1f1" />
+
+            <Text style={styles.titleSession}>BREAK</Text>
+          </View>
+
+          <Text
+            style={[
+              styles.textTimer,
+              !pauseTimeBreak ? {color: '#B22222'} : '',
+            ]}>
+            00:{secondsBreakText}
+          </Text>
+
+          <View style={styles.buttons}>
+            <TouchableOpacity
+              disabled={!pauseTimeWork}
+              onPress={() => {
+                handlePlayTimeWork('break');
+              }}
+              style={[styles.button, !pauseTimeWork ? {opacity: 0.5} : '']}>
+              {pauseTimeBreak ? (
+                <Icon name="play" size={20} color="#f1f1f1" />
+              ) : (
+                <Icon name="pause" size={20} color="#f1f1f1" />
+              )}
+
+              <Text style={styles.buttonText}>
+                {pauseTimeBreak ? 'Start' : 'Pause'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              disabled={!pauseTimeWork || !pauseTimeBreak}
+              onPress={() => {
+                handleResetTime('break');
+              }}
+              style={[
+                styles.button,
+                !pauseTimeWork || !pauseTimeBreak ? {opacity: 0.5} : '',
+              ]}>
+              <Icon name="rotate-ccw" size={20} color="#f1f1f1" />
+
+              <Text style={styles.buttonText}>Reset</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  loading: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    height: '100%',
-    width: '100%',
-    zIndex: 9999999999999,
-  },
-
-  successView: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(76,175,80,0.5)',
-
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    height: '100%',
-    width: '100%',
-    zIndex: 9999999999999,
-  },
-
-  textSuccessView: {
-    color: '#C7E6C8',
-    fontWeight: 'bold',
-    fontSize: 30,
-    marginTop: -100,
-    textAlign: 'center',
-  },
-
-  safeContainer: {
-    flex: 1,
-  },
-
-  containerScroll: {
-    // flex: 1,
-  },
-
-  main: {
-    // flex: 1,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    paddingVertical: 20,
-    paddingHorizontal: 15,
-    margin: 15,
-  },
-
-  button: {
-    flexDirection: 'row',
-    height: 51,
-    backgroundColor: '#0f4c82',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 5,
-    borderRadius: 5,
-  },
-
-  buttonWhatsApp: {
-    flex: 1,
-    flexDirection: 'row',
-    height: 51,
-    color: '#000',
-    backgroundColor: '#04D361',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 5,
-    borderRadius: 5,
-    marginRight: 3,
-  },
-
-  buttonWaze: {
-    flex: 1,
-    flexDirection: 'row',
-    height: 51,
-    color: '#000',
-    backgroundColor: '#33CCFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 5,
-    borderRadius: 5,
-    marginLeft: 3,
-  },
-
-  buttonsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    // marginBottom: 5,
-  },
-
-  buttonText: {
-    color: '#EFEFEF',
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginLeft: 5,
-  },
-
-  iconNameClient: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-
-  nameCodClient: {},
-
-  nameClient: {
-    fontSize: 26,
-    fontWeight: 'bold',
-  },
-
-  codClient: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#595959',
-  },
-
-  data: {
-    marginBottom: 15,
-  },
-
-  dataTitle: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    marginBottom: 7,
-  },
-
-  dataTitleText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginLeft: 3,
-  },
-
-  textsColumn: {
-    flex: 1,
-    marginBottom: 5,
-  },
-
-  textDarkGray: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#717171',
-  },
-  textLightGray: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#B0B0B0',
-    textTransform: 'uppercase',
-  },
-
-  orderService: {
-    flex: 1,
-    marginBottom: 15,
-  },
-
-  codSituationServiceOrder: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-
-  titleClientAddress: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-
-  clientAddress: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    paddingLeft: 1,
-  },
-});

@@ -1,30 +1,36 @@
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import React from 'react';
-import { View, Text } from 'react-native';
-import { BorderlessButton } from 'react-native-gesture-handler';
-// import { createIconSet } from 'react-native-vector-icons';
+import {View, Text} from 'react-native';
+import {BorderlessButton} from 'react-native-gesture-handler';
+import Icon from 'react-native-vector-icons/Feather';
 
 import styles from './HeaderStyles';
 
-// const glyphMap = require('../../assets/customIcons/remixicon.glyphmap.json');
-// const assetId = require('../../assets/customIcons/remixicon.ttf');
-
-// const CustomIcon = createIconSet(glyphMap, 'remixicon', assetId);
-
-export default function Header({ title, showCancel = true }) {
+export default function Header({
+  title,
+  showSettings = true,
+  showReturn = true,
+}) {
   const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
-      <BorderlessButton onPress={navigation.goBack}>
-        {/* <CustomIcon name="arrow-left-line" size={23} color="#ffffff" /> */}
-      </BorderlessButton>
+      {showReturn ? (
+        <BorderlessButton onPress={navigation.goBack}>
+          <Icon name="arrow-left" size={25} color="#ffffff" />
+        </BorderlessButton>
+      ) : (
+        <View style={styles.viewWhite} />
+      )}
 
       <Text style={styles.title}>{title}</Text>
 
-      {showCancel ? (
-        <BorderlessButton onPress={navigation.goBack}>
-          {/* <CustomIcon name="close-line" size={23} color="#ffffff" /> */}
+      {showSettings ? (
+        <BorderlessButton
+          onPress={() => {
+            navigation.navigate('TimerSettings');
+          }}>
+          <Icon name="settings" size={25} color="#ffffff" />
         </BorderlessButton>
       ) : (
         <View style={styles.viewWhite} />

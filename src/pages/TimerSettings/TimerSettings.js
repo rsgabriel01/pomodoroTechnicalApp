@@ -1,12 +1,6 @@
 import React from 'react';
 
-import {
-  SafeAreaView,
-  View,
-  ScrollView,
-  Text,
-  StyleSheet,
-} from 'react-native';
+import {SafeAreaView, View, ScrollView, Text, StyleSheet} from 'react-native';
 
 export default function ServiceOrder() {
   // #region Definitions
@@ -18,14 +12,12 @@ export default function ServiceOrder() {
       <ScrollView style={styles.containerScroll}>
         <View style={styles.main}>
           <View style={styles.iconNameClient}>
-
             <View style={styles.nameCodClient}>
               <Text style={styles.nameClient} />
               <Text style={styles.codClient}>Código: </Text>
             </View>
           </View>
 
-          {/* OS */}
           <View style={styles.orderService}>
             <View style={styles.dataTitle}>
               <Text style={styles.dataTitleText}>Ordem de serviço</Text>
@@ -45,7 +37,6 @@ export default function ServiceOrder() {
           </View>
         </View>
       </ScrollView>
-
     </SafeAreaView>
   );
 }
