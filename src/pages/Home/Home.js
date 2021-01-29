@@ -1,12 +1,8 @@
-import React, {useState, useEffect} from 'react';
-import {
-  SafeAreaView,
-  View,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import React, {useState, useEffect, useCallback} from 'react';
+
+import {SafeAreaView, View, Text, TouchableOpacity, Alert} from 'react-native';
+
+import {useFocusEffect} from '@react-navigation/native';
 
 import AsyncStorage from '@react-native-community/async-storage';
 
@@ -24,27 +20,13 @@ export default function ServiceOrder() {
   const [secondsBreakText, setSecondsBreakText] = useState('5');
   const [pauseTimeBreak, setPauseTimeBreak] = useState(true);
 
+  // #endregion Definitions
+
+  // #region useEffect
+
   useEffect(() => {
     getSettingsSave();
   }, []);
-
-  const getSettingsSave = async () => {
-    try {
-      const secondsWorkSave = await AsyncStorage.getItem('@SECONDS_WORK');
-
-      if (secondsWorkSave) {
-        setSecondsWork(secondsWorkSave);
-      }
-
-      const secondsBreakSave = await AsyncStorage.getItem('@SECONDS_BREAK');
-
-      if (secondsBreakSave) {
-        setSecondsBreak(secondsBreakSave);
-      }
-    } catch (error) {
-      alert(`ERRO: getSettingsSave. - ${error}`);
-    }
-  };
 
   useEffect(() => {
     if (secondsWork > 0 && pauseTimeWork === false) {
@@ -74,49 +56,23 @@ export default function ServiceOrder() {
     }
   }, [secondsBreak]);
 
-  const decrementTime = (typeTimeDecrement) => {
-    if (typeTimeDecrement === 'work') {
-      setTimeout(() => setSecondsWork(secondsWork - 1), 1000);
-    }
+  // #endregion usEffect
 
-    if (typeTimeDecrement === 'break') {
-      setTimeout(() => setSecondsBreak(secondsBreak - 1), 1000);
-    }
-  };
+  // #region use Focus Effect
 
-  const handlePlayTimeWork = (typePlayTime) => {
-    if (typePlayTime === 'work') {
-      if (pauseTimeWork === true) {
-        setPauseTimeWork(false);
-      } else if (pauseTimeWork === false) {
+  useFocusEffect(
+    useCallback(
+      () => () => {
         setPauseTimeWork(true);
-      }
-
-      decrementTime('work');
-    }
-
-    if (typePlayTime === 'break') {
-      if (pauseTimeBreak === true) {
-        setPauseTimeBreak(false);
-      } else if (pauseTimeBreak === false) {
         setPauseTimeBreak(true);
-      }
+      },
+      [],
+    ),
+  );
 
-      decrementTime('break');
-    }
-  };
+  // #endregion use Effect
 
-  const handleResetTime = (resetTypeTime) => {
-    if (resetTypeTime === 'work') {
-      setPauseTimeWork(true);
-      setSecondsWork(10);
-    }
-
-    if (resetTypeTime === 'break') {
-      setPauseTimeBreak(true);
-      setSecondsBreak(10);
-    }
-  };
+  // #region Alerts
 
   const alerts = (tipeAlert) => {
     if (tipeAlert === 'break') {
@@ -153,6 +109,70 @@ export default function ServiceOrder() {
     }
   };
 
+  // #endregion Alerts
+
+  const getSettingsSave = async () => {
+    try {
+      const secondsWorkSave = await AsyncStorage.getItem('@SECONDS_WORK');
+
+      if (secondsWorkSave) {
+        setSecondsWork(secondsWorkSave);
+      }
+
+      const secondsBreakSave = await AsyncStorage.getItem('@SECONDS_BREAK');
+
+      if (secondsBreakSave) {
+        setSecondsBreak(secondsBreakSave);
+      }
+    } catch (error) {
+      alert(`ERRO: getSettingsSave. - ${error}`);
+    }
+  };
+
+  const decrementTime = (typeTimeDecrement) => {
+    if (typeTimeDecrement === 'work') {
+      setTimeout(() => setSecondsWork(secondsWork - 1), 1000);
+    }
+
+    if (typeTimeDecrement === 'break') {
+      setTimeout(() => setSecondsBreak(secondsBreak - 1), 1000);
+    }
+  };
+
+  const handlePlayTimeWork = (typePlayTime) => {
+    if (typePlayTime === 'work') {
+      if (pauseTimeWork === true) {
+        setPauseTimeWork(false);
+      } else if (pauseTimeWork === false) {
+        setPauseTimeWork(true);
+      }
+
+      decrementTime('work');
+    }
+
+    if (typePlayTime === 'break') {
+      if (pauseTimeBreak === true) {
+        setPauseTimeBreak(false);
+      } else if (pauseTimeBreak === false) {
+        setPauseTimeBreak(true);
+      }
+
+      decrementTime('break');
+    }
+  };
+
+  const handleResetTime = (resetTypeTime) => {
+    if (resetTypeTime === 'work') {
+      setPauseTimeWork(true);
+      getSettingsSave();
+    }
+
+    if (resetTypeTime === 'break') {
+      setPauseTimeBreak(true);
+      getSettingsSave();
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeContainer}>
       <View style={styles.main}>
@@ -168,7 +188,8 @@ export default function ServiceOrder() {
               styles.textTimer,
               !pauseTimeWork ? {color: '#B22222'} : '',
             ]}>
-            00:{secondsWorkText}
+            00:
+            {secondsWorkText}
           </Text>
 
           <View style={styles.buttons}>
@@ -218,7 +239,8 @@ export default function ServiceOrder() {
               styles.textTimer,
               !pauseTimeBreak ? {color: '#B22222'} : '',
             ]}>
-            00:{secondsBreakText}
+            00:
+            {secondsBreakText}
           </Text>
 
           <View style={styles.buttons}>

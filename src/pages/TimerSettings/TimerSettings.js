@@ -1,219 +1,202 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 
-import {SafeAreaView, View, ScrollView, Text, StyleSheet} from 'react-native';
+import {
+  SafeAreaView,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+
+import AsyncStorage from '@react-native-community/async-storage';
+
+import Icon from 'react-native-vector-icons/Feather';
+
+import styles from './TimerSettingsStyles';
+
+import {onlyNumber} from '../../helpers/onlyNumber';
 
 export default function ServiceOrder() {
   // #region Definitions
 
+  const [secondsWork, setSecondsWork] = useState('25');
+  const [secondsBreak, setSecondsBreak] = useState('5');
+
   // #endregion Definitions
+
+  // #region useEffect
+
+  useEffect(() => {
+    getSettingsSave();
+  }, []);
+
+  // #endregion useEffect
+
+  // #region Alerts
+
+  const alertAttention = (message) => {
+    Alert.alert(
+      'Atenção!',
+      message,
+      [
+        {
+          text: 'OK',
+        },
+      ],
+      {cancelable: false},
+    );
+  };
+
+  // #endregion Alerts
+
+  const getSettingsSave = async () => {
+    try {
+      const secondsWorkSave = await AsyncStorage.getItem('@SECONDS_WORK');
+
+      if (secondsWorkSave) {
+        setSecondsWork(secondsWorkSave);
+      }
+
+      const secondsBreakSave = await AsyncStorage.getItem('@SECONDS_BREAK');
+
+      if (secondsBreakSave) {
+        setSecondsBreak(secondsBreakSave);
+      }
+    } catch (error) {
+      alert(`ERRO: getSettingsSave. - ${error}`);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (secondsWork === '') {
+      alertAttention(
+        'O campo segundos do cronômetro Work deve estar preenchido.',
+      );
+      return;
+    }
+
+    if (!onlyNumber(secondsWork)) {
+      alertAttention(
+        'O campo segundos do cronômetro Work deve conter apenas nmeros.',
+      );
+      return;
+    }
+
+    if (secondsBreak === '') {
+      alertAttention(
+        'O campo segundos do cronômetro Break deve estar preenchido.',
+      );
+      return;
+    }
+
+    if (!onlyNumber(secondsBreak)) {
+      alertAttention(
+        'O campo segundos do cronômetro Break deve conter apenas números.',
+      );
+      return;
+    }
+
+    saveConfig();
+  };
+
+  const saveConfig = async () => {
+    try {
+      await AsyncStorage.setItem('@SECONDS_WORK', secondsWork);
+      await AsyncStorage.setItem('@SECONDS_BREAK', secondsBreak);
+
+      Alert.alert(
+        'Isso ai!',
+        'Configurações de cronômetros salvas com sucesso.',
+        [
+          {
+            text: 'OK',
+          },
+        ],
+        {cancelable: false},
+      );
+    } catch (error) {
+      alert(`ERROR: saveConfig - ${error}`);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeContainer}>
-      <ScrollView style={styles.containerScroll}>
-        <View style={styles.main}>
-          <View style={styles.iconNameClient}>
-            <View style={styles.nameCodClient}>
-              <Text style={styles.nameClient} />
-              <Text style={styles.codClient}>Código: </Text>
-            </View>
+      <View style={styles.main}>
+        <View style={styles.titleConfig}>
+          <Text style={styles.titleConfigText}>Time Work</Text>
+        </View>
+
+        <View style={styles.configContainer}>
+          <View style={styles.inputGroupConfigInColumn}>
+            <TextInput
+              editable={false}
+              maxLength={2}
+              value="00"
+              style={styles.inputConfig}
+            />
+            <Text style={styles.labelInputConfig}>Minutes</Text>
           </View>
 
-          <View style={styles.orderService}>
-            <View style={styles.dataTitle}>
-              <Text style={styles.dataTitleText}>Ordem de serviço</Text>
-            </View>
+          <View style={styles.inputGroupConfigInColumn}>
+            <Text style={styles.textTwoPoints}>:</Text>
+          </View>
 
-            <View style={styles.codSituationServiceOrder}>
-              <View style={styles.textsColumn}>
-                <Text style={styles.textDarkGray}>Código</Text>
-                <Text style={styles.textLightGray} />
-              </View>
-
-              <View style={styles.textsColumn}>
-                <Text style={styles.textDarkGray}>Situação</Text>
-                <Text style={styles.textLightGray} />
-              </View>
-            </View>
+          <View style={styles.inputGroupConfigInColumn}>
+            <TextInput
+              keyboardType="numeric"
+              maxLength={2}
+              autoCorrect={false}
+              autoCompleteType="off"
+              value={secondsWork}
+              onChangeText={setSecondsWork}
+              style={styles.inputConfig}
+            />
+            <Text style={styles.labelInputConfig}>Seconds</Text>
           </View>
         </View>
-      </ScrollView>
+
+        <View style={styles.titleConfig}>
+          <Text style={[styles.titleConfigText, {marginTop: 30}]}>
+            Time Break
+          </Text>
+        </View>
+
+        <View style={styles.configContainer}>
+          <View style={styles.inputGroupConfigInColumn}>
+            <TextInput
+              editable={false}
+              maxLength={2}
+              value="00"
+              style={styles.inputConfig}
+            />
+            <Text style={styles.labelInputConfig}>Minutes</Text>
+          </View>
+
+          <View style={styles.inputGroupConfigInColumn}>
+            <Text style={styles.textTwoPoints}>:</Text>
+          </View>
+
+          <View style={styles.inputGroupConfigInColumn}>
+            <TextInput
+              keyboardType="numeric"
+              maxLength={2}
+              autoCorrect={false}
+              autoCompleteType="off"
+              value={secondsBreak}
+              onChangeText={setSecondsBreak}
+              style={styles.inputConfig}
+            />
+            <Text style={styles.labelInputConfig}>Seconds</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity onPress={handleSubmit} style={styles.button}>
+          <Icon name="check" size={20} color="#f1f1f1" />
+
+          <Text style={styles.buttonText}>Save</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  loading: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    height: '100%',
-    width: '100%',
-    zIndex: 9999999999999,
-  },
-
-  successView: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(76,175,80,0.5)',
-
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    height: '100%',
-    width: '100%',
-    zIndex: 9999999999999,
-  },
-
-  textSuccessView: {
-    color: '#C7E6C8',
-    fontWeight: 'bold',
-    fontSize: 30,
-    marginTop: -100,
-    textAlign: 'center',
-  },
-
-  safeContainer: {
-    flex: 1,
-  },
-
-  containerScroll: {
-    // flex: 1,
-  },
-
-  main: {
-    // flex: 1,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    paddingVertical: 20,
-    paddingHorizontal: 15,
-    margin: 15,
-  },
-
-  button: {
-    flexDirection: 'row',
-    height: 51,
-    backgroundColor: '#0f4c82',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 5,
-    borderRadius: 5,
-  },
-
-  buttonWhatsApp: {
-    flex: 1,
-    flexDirection: 'row',
-    height: 51,
-    color: '#000',
-    backgroundColor: '#04D361',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 5,
-    borderRadius: 5,
-    marginRight: 3,
-  },
-
-  buttonWaze: {
-    flex: 1,
-    flexDirection: 'row',
-    height: 51,
-    color: '#000',
-    backgroundColor: '#33CCFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 5,
-    borderRadius: 5,
-    marginLeft: 3,
-  },
-
-  buttonsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    // marginBottom: 5,
-  },
-
-  buttonText: {
-    color: '#EFEFEF',
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginLeft: 5,
-  },
-
-  iconNameClient: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-
-  nameCodClient: {},
-
-  nameClient: {
-    fontSize: 26,
-    fontWeight: 'bold',
-  },
-
-  codClient: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#595959',
-  },
-
-  data: {
-    marginBottom: 15,
-  },
-
-  dataTitle: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    marginBottom: 7,
-  },
-
-  dataTitleText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginLeft: 3,
-  },
-
-  textsColumn: {
-    flex: 1,
-    marginBottom: 5,
-  },
-
-  textDarkGray: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#717171',
-  },
-  textLightGray: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#B0B0B0',
-    textTransform: 'uppercase',
-  },
-
-  orderService: {
-    flex: 1,
-    marginBottom: 15,
-  },
-
-  codSituationServiceOrder: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-
-  titleClientAddress: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-
-  clientAddress: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    paddingLeft: 1,
-  },
-});

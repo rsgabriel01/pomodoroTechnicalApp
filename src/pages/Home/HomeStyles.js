@@ -1,5 +1,3 @@
-import React from 'react';
-
 import {StyleSheet} from 'react-native';
 
 const styles = StyleSheet.create({
@@ -57,7 +55,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
 
-  buttonPressed: {
+  buttonDisabled: {
     opacity: 0.5,
   },
 
